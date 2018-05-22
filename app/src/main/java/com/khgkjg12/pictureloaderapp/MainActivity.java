@@ -1,13 +1,15 @@
 package com.khgkjg12.pictureloaderapp;
 
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
-import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+
+import com.khgkjg12.pictureloader.PictureLoaderDialog;
 
 /**
  * Created by Hyun on 2018-05-22.
@@ -31,5 +33,20 @@ public class MainActivity extends AppCompatActivity {
         mButton = findViewById(R.id.button);
 
         mImageView.getLayoutParams().height = screenWidth;
+        mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadPicture();
+            }
+        });
+    }
+
+    private void loadPicture(){
+        PictureLoaderDialog.newInstance(new PictureLoaderDialog.OnLoadPictureListener() {
+            @Override
+            public void onLoadPicture(Uri uri) {
+                mImageView.setImageURI(uri);
+            }
+        }).show(getSupportFragmentManager(), "dialog");
     }
 }

@@ -1,34 +1,29 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_gravity="center"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_gravity="center"
     tools:context="com.khgkjg12.pictureloader.PictureLoaderDialog">
 
-    <LinearLayout
-        android:layout_width="160dp"
-        android:layout_height="wrap_content"
-        android:background="@drawable/dialog_background"
-        android:orientation="vertical">
+    <Button
+        android:id="@+id/camera_button"
+        android:layout_width="@dimen/dialog_width"
+        android:layout_height="@dimen/dialog_button_height"
+        android:background="@drawable/dialog_top_button"
+        android:text="@string/dialog_camera_button"
+        android:textColor="@color/button_color_text"
+        android:textSize="@dimen/dialog_text_size"
+        android:typeface="sans" />
 
-        <Button
-            android:id="@+id/camera_button"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dialog_button_height"
-            android:background="@drawable/dialog_top_button"
-            android:text="@string/dialog_camera_button"
-            android:textColor="@color/button_color_text"
-            android:textSize="@dimen/dialog_text_size"
-            android:typeface="sans" />
-
-        <Button
-            android:id="@+id/album_button"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dialog_button_height"
-            android:background="@drawable/dialog_bottom_button"
-            android:text="@string/dialog_album_button"
-            android:textColor="@color/button_color_text"
-            android:textSize="@dimen/dialog_text_size"
-            android:typeface="sans" />
-    </LinearLayout>
+    <Button
+        android:id="@+id/album_button"
+        android:layout_width="@dimen/dialog_width"
+        android:layout_height="@dimen/dialog_button_height"
+        android:background="@drawable/dialog_bottom_button"
+        android:text="@string/dialog_album_button"
+        android:textColor="@color/button_color_text"
+        android:textSize="@dimen/dialog_text_size"
+        android:typeface="sans" />
 </LinearLayout>

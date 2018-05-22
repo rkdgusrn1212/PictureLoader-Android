@@ -23,7 +23,6 @@ public class AlbumRecyclerViewAdapter extends RecyclerView.Adapter<AlbumRecycler
     private Context mContext;
 
     private Cursor mCursor;
-    private int selectedPosition =0 ;
 
     private boolean mDataValid;
 
@@ -75,17 +74,9 @@ public class AlbumRecyclerViewAdapter extends RecyclerView.Adapter<AlbumRecycler
         Uri uri = Uri.parse("file:///"+cursor.getString(2));
         Picasso.with(mContext).load(uri).centerCrop().resize(200,200).memoryPolicy(MemoryPolicy.NO_STORE).into(viewHolder.mImageView);
         viewHolder.mImageView.setTag(uri);
-        if(position != selectedPosition) {
-            viewHolder.mImageView.setForeground(null);
-        }else{
-            viewHolder.mImageView.setForeground(viewHolder.mImageView.getResources().getDrawable(R.drawable.upload_album_selected,null));
-        }
         viewHolder.mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                notifyItemChanged(selectedPosition);
-                selectedPosition = position;
-                notifyItemChanged(selectedPosition);
                 mListener.onClick(v);
             }
         });
@@ -94,7 +85,7 @@ public class AlbumRecyclerViewAdapter extends RecyclerView.Adapter<AlbumRecycler
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_fragment_album_recycler_view, parent, false);
+                .inflate(R.layout.album_activity_recyclerview_item, parent, false);
         //ViewHolder의 높이를 ViewHolder의 너비와 같게 하기 위함.
         view.getLayoutParams().height = ((RecyclerView)parent).getLayoutManager().getWidth()/4;
         return new ViewHolder(view);
@@ -128,7 +119,6 @@ public class AlbumRecyclerViewAdapter extends RecyclerView.Adapter<AlbumRecycler
      * closed.
      */
     public Cursor swapCursor(Cursor newCursor) {
-        selectedPosition = 0;
         if (newCursor == mCursor) {
             return null;
         }
@@ -177,7 +167,7 @@ public class AlbumRecyclerViewAdapter extends RecyclerView.Adapter<AlbumRecycler
         ViewHolder(View view){
             super(view);
             mView = view;
-            mImageView = view.findViewById(R.id.image_view);
+            mImageView = view.findViewById(R.id.imageview);
         }
     }
 }

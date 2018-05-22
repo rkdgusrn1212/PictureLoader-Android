@@ -29,6 +29,8 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 
 import com.soundcloud.android.crop.Crop;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -38,27 +40,21 @@ import java.util.ArrayList;
  * Created by Hyun on 2018-05-22.
  */
 
-public class AlbumActivity extends AppCompatActivity implements  View.OnClickListener, PermissionExplainDialog.OnResultListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class AlbumActivity extends AppCompatActivity implements  View.OnClickListener, AdapterView.OnItemSelectedListener, LoaderManager.LoaderCallbacks<Cursor> {
 
-    private int RESULT_PERMISSIONS = 0;
-    private int REQUSET_FOR_SETTING = 1;
 
     private AlbumRecyclerViewAdapter mRecyclerViewAdapter;
     private RecyclerView mRecyclerView;
-    private Cursor mCursor;
     private ArrayList<Long> bucketIdList;//안드로이드 Images.media의 Bucket ID 들을 저장-> 같은 BucketName을 구분하기 위함
     private ArrayList<CharSequence> bucketNameList;//안드로이드 Images.media의 Bucket Name 들을 저장
     private ArrayAdapter<CharSequence> mAdapter;
-    private ImageView mImageView;
-    private Button mNextButton;
     private Spinner mSpinner;
-    private Uri mSelectedUri;
+    private Uri mOutputUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.album_activity);
-        requestPermissionCamera();
 
         ActionBar actionBar = getSupportActionBar();
         View view = getLayoutInflater().inflate(R.layout.album_activity_actionbar,null);
@@ -67,51 +63,22 @@ public class AlbumActivity extends AppCompatActivity implements  View.OnClickLis
         actionBar.setDisplayShowTitleEnabled(false);
 
         mSpinner = getSupportActionBar().getCustomView().findViewById(R.id.spinner);
-        mNextButton = getSupportActionBar().getCustomView().findViewById(R.id.button_next);
-        mNextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startCrop();
-            }
-        });
 
         bucketNameList = new ArrayList<>();
         bucketNameList.add("전체");//버킷이 없어도 꼭 있어야하는 기본 옵션이 전체 보기이기 때문이다.
         bucketIdList = new ArrayList<>();
         bucketIdList.add(0L);//전체보기 옵션에 해당하는 버킷아이디는 없기 때문에 null에 해당하는 0L을 넣는다.
-        mAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, bucketNameList);
+        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, bucketNameList);
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinner.setAdapter(mAdapter);
-        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Bundle bundle = new Bundle();
-                bundle.putLong("bucketId",bucketIdList.get(position));
-                getLoaderManager().restartLoader(1, bundle, mThis);
-            }
+        mSpinner.setOnItemSelectedListener(this);
+        getSupportLoaderManager().initLoader(0, null, this);
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-        getLoaderManager().initLoader(0, null, this);
-        mRecyclerViewAdapter = new AlbumRecyclerViewAdapter(getContext(), mCursor, this );
+        mRecyclerView = findViewById(R.id.recyclerview);
+        mRecyclerViewAdapter = new AlbumRecyclerViewAdapter(this, null, this );
         mRecyclerView.setAdapter(mRecyclerViewAdapter);
+        mRecyclerView = findViewById(R.id.recyclerview);
 
-
-        View viewHierarchy = inflater.inflate(R.layout.fragment_album, container, false);
-        mRecyclerView = viewHierarchy.findViewById(R.id.recycler_view);
-        mImageView = viewHierarchy.findViewById(R.id.image_view);
-        mImageView.getLayoutParams().height=container.getMeasuredWidth();
-
-    }
-
-    private void startCrop(){
-        if(mSelectedUri==null){
-            return;
-        }
-        Uri outputUri = Uri.fromFile(new File(getCacheDir(), "cropped.jpg"));
-        Crop.of(mSelectedUri, outputUri).asSquare().start(this);
     }
     /**
      *
@@ -127,7 +94,7 @@ public class AlbumActivity extends AppCompatActivity implements  View.OnClickLis
             };
             Uri baseUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 
-            return new CursorLoader(getActivity(), baseUri,
+            return new CursorLoader(this, baseUri,
                     projection, null, null,
                     MediaStore.Images.Media.BUCKET_ID + " DESC");
         }else{
@@ -143,7 +110,7 @@ public class AlbumActivity extends AppCompatActivity implements  View.OnClickLis
                 select = " bucket_id = " + bucketId;
             }
 
-            return new CursorLoader(getActivity(), baseUri,
+            return new CursorLoader(this, baseUri,
                     projection, select, null,
                     MediaStore.Images.Media.BUCKET_ID + " DESC");
         }
@@ -165,10 +132,6 @@ public class AlbumActivity extends AppCompatActivity implements  View.OnClickLis
             } while(data.moveToNext());
             mAdapter.notifyDataSetChanged();
         }else{
-            if(data.moveToFirst()){
-                selectedUri = Uri.parse("file:///"+data.getString(2));
-                Picasso.with(getContext()).load(selectedUri).centerCrop().fit().memoryPolicy(MemoryPolicy.NO_STORE).into(mImageView);
-            }
             mRecyclerViewAdapter.swapCursor(data);
         }
     }
@@ -188,102 +151,31 @@ public class AlbumActivity extends AppCompatActivity implements  View.OnClickLis
     }
 
     @Override
-    public void onClick(View v) {
-        selectedUri = (Uri)v.getTag();
-        Picasso.with(getContext()).load(selectedUri).centerCrop().fit().memoryPolicy(MemoryPolicy.NO_STORE).into(mImageView);
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        Bundle bundle = new Bundle();
+        bundle.putLong("bucketId",bucketIdList.get(i));
+        getSupportLoaderManager().restartLoader(1, bundle, this);
     }
 
     @Override
-    public void agreeToPermissionExplainDialog() {
-        Intent i = new Intent();
-        i.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        i.addCategory(Intent.CATEGORY_DEFAULT);
-        i.setData(Uri.parse("package:" + getApplication().getPackageName()));
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        i.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-        i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-        startActivityForResult(i, REQUSET_FOR_SETTING);
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
     }
-    private class MyPagerAdapter extends FragmentStatePagerAdapter {
 
-        public MyPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public int getCount() {
-            return mFragments.size();
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            return mFragments.get(position);
-        }
+    @Override
+    public void onClick(View view) {
+        mOutputUri = Uri.fromFile(new File(getCacheDir(), "cropped.jpg"));
+        Crop.of((Uri)view.getTag(), mOutputUri).asSquare().start(this);
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent result) {
         if (requestCode == Crop.REQUEST_CROP && resultCode == RESULT_OK) {
-            Intent intent = new Intent(this, UploadDetailActivity.class);
-            intent.putExtra("imageUri", mOutputUri);
-            intent.putExtra("originPostId", mOriginPostId);
-            startActivity(intent);
-        } else if (requestCode == REQUSET_FOR_SETTING) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA},
-                    RESULT_PERMISSIONS);
-        }
-    }
-
-    public boolean requestPermissionCamera() {
-        int sdkVersion = Build.VERSION.SDK_INT;
-        if (sdkVersion >= Build.VERSION_CODES.M) {
-
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.CAMERA)) {
-                    PermissionExplainDialogFragment.newInstance("카메라 권한", "사진을 촬영하기위해 카메라 권한이 필요합니다.").show(getSupportFragmentManager(), "dialog");
-                } else {
-
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.CAMERA},
-                            RESULT_PERMISSIONS);
-                }
-
-            } else {
-                mFragments.add(new CameraFragment());
-                mPageAdapter.notifyDataSetChanged();
-                mTabLayout.getTabAt(0).setIcon(R.drawable.icon_album);
-                mTabLayout.getTabAt(1).setIcon(R.drawable.icon_camera);
-                mTabLayout.setVisibility(View.VISIBLE);
-            }
-        } else {  // version 6 이하일때
-            mFragments.add(new CameraFragment());
-            mPageAdapter.notifyDataSetChanged();
-            mTabLayout.getTabAt(0).setIcon(R.drawable.icon_album);
-            mTabLayout.getTabAt(1).setIcon(R.drawable.icon_camera);
-            mTabLayout.setVisibility(View.VISIBLE);
-        }
-
-        return true;
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-
-        if (RESULT_PERMISSIONS == requestCode) {
-
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                mFragments.add(new CameraFragment());
-                mPageAdapter.notifyDataSetChanged();
-                mTabLayout.getTabAt(0).setIcon(R.drawable.icon_album);
-                mTabLayout.getTabAt(1).setIcon(R.drawable.icon_camera);
-                mTabLayout.setVisibility(View.VISIBLE);
-            }
+            Intent intent = new Intent();
+            intent.putExtra("picture",mOutputUri);
+            setResult(RESULT_OK, intent);
+            finish();
         }
     }
 }

@@ -8,11 +8,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 
 
+
 /**
- * A simple {@link Fragment} subclass.
+ * 권한 설명용.
+ * setListener 를 통한 콜백 함수 등록 필요. 미등록시 예외처리
  */
 public class PermissionExplainDialog extends DialogFragment {
 
@@ -20,15 +23,18 @@ public class PermissionExplainDialog extends DialogFragment {
     private String mText;
     private OnResultListener mListener;
 
-    public static PermissionExplainDialog newInstance(String permissionName, String text) {
+    public static PermissionExplainDialog newInstance(String permissionName, String text, @NonNull OnResultListener listener) {
         PermissionExplainDialog f = new PermissionExplainDialog();
 
+        if(listener == null){
+            throw new RuntimeException("No Listener on permissionExplainDialog");
+        }
         // Supply num input as an argument.
         Bundle args = new Bundle();
         args.putString("permission", permissionName);
         args.putString("text",text);
         f.setArguments(args);
-
+        f.setOnResultListener(listener);
         return f;
     }
 
@@ -49,7 +55,11 @@ public class PermissionExplainDialog extends DialogFragment {
         builder.setMessage("해당 서비스를 사용하려면 \""+mPermissionName+"\" 권한이 필요합니다.\n"+mText)
                 .setPositiveButton("허가", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        mListener.agreeToPermissionExplainDialog();
+                        if(mListener!=null) {
+                            mListener.agreeToPermissionExplainDialog();
+                        }else{
+                            throw new RuntimeException("No Listener on permissionExplainDialog");
+                        }
                     }
                 })
                 .setNegativeButton("거절", new DialogInterface.OnClickListener() {
@@ -60,15 +70,9 @@ public class PermissionExplainDialog extends DialogFragment {
         return builder.create();
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnResultListener) {
-            mListener = (OnResultListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnResultListener");
-        }
+
+    private void setOnResultListener(OnResultListener listener){
+        mListener = listener;
     }
 
     public interface OnResultListener{

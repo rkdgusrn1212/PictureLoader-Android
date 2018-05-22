@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">PictureLoader</string>
     <string name="dialog_camera_button">Take Photo</string>
-    <string name="dialog_album_button">Album</string>
+    <string name="dialog_album_button">Choose From Gallery</string>
 </resources>

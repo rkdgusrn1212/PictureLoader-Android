@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dialog_camera_button">사진 촬영</string>
+    <string name="dialog_album_button">앨범에서 사진 선택</string>
+</resources>
