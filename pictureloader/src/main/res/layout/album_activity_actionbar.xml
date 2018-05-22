@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <android.support.v7.widget.AppCompatSpinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:id="@+id/spinner"/>
+
+    <com.khgkjg12.component.AlphaActionButton
+        android:layout_width="@dimen/actionbar_button_size"
+        android:layout_height="@dimen/actionbar_button_size"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="ture"
+        android:id="@+id/button_next" />
+
+</RelativeLayout>
