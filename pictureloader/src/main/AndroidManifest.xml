@@ -6,15 +6,14 @@
     <application>
         <activity
             android:name=".AlbumActivity"
-            android:theme="@style/PictureLoaderStyle"
+            android:theme="@style/PictureLoaderTheme"
             android:screenOrientation="portrait"/>
         <activity
             android:name=".CameraActivity"
-            android:theme="@style/PictureLoaderStyle"
             android:screenOrientation="portrait"/>
         <activity
-            android:theme="@style/PictureLoaderStyle"
             android:screenOrientation="portrait"
+            android:theme="@style/PictureLoaderTheme"
             android:name="com.soundcloud.android.crop.CropImageActivity" />
     </application>
 

@@ -97,7 +97,9 @@ public class PictureLoaderDialog extends DialogFragment implements View.OnClickL
                     PermissionExplainDialog.newInstance("외부 저장소 읽기 권한", "디바이스에 저장된 사진들을 불러오기 위해 필요합니다.", new PermissionExplainDialog.OnResultListener() {
                         @Override
                         public void agreeToPermissionExplainDialog() {
-                            startAlbumActivity();
+                            requestPermissions(
+                                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                    REQUEST_PERMISSION_READ_STORAGE);
                         }
                     }).show(getFragmentManager(), "permissionexplaindialog");
 
@@ -125,7 +127,9 @@ public class PictureLoaderDialog extends DialogFragment implements View.OnClickL
                     PermissionExplainDialog.newInstance("카메라 권한", "사진을 촬영하기위해 카메라 권한이 필요합니다.", new PermissionExplainDialog.OnResultListener() {
                         @Override
                         public void agreeToPermissionExplainDialog() {
-                            startCameraActivity();
+                            requestPermissions(
+                                    new String[]{Manifest.permission.CAMERA},
+                                    REQUEST_PERMISSION_CAMERA);
                         }
                     }).show(getFragmentManager(), "dialog");
                     return;
