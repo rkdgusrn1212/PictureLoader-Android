@@ -10,6 +10,7 @@
             android:screenOrientation="portrait"/>
         <activity
             android:name=".CameraActivity"
+            android:theme="@style/PictureLoaderTheme"
             android:screenOrientation="portrait"/>
         <activity
             android:screenOrientation="portrait"

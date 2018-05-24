@@ -3,4 +3,5 @@
     <string name="dialog_album_button">Choose From Gallery</string>
     <string name="camera_is_not_available_error">Camera is not available now.</string>
     <string name="no_camera_error">No camera on device.</string>
+    <string name="album_activity_spinner">Select Album</string>
 </resources>

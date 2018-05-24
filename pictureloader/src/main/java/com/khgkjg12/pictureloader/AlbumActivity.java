@@ -1,37 +1,35 @@
 package com.khgkjg12.pictureloader;
 
-import android.Manifest;
+
 import android.content.Intent;
-import android.content.pm.PackageManager;
+
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
+
 import android.os.Bundle;
-import android.os.Parcelable;
+
 import android.provider.MediaStore;
-import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
+
+
+
+
+
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.ContextCompat;
+
+
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBar;
+
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Spinner;
 
 import com.soundcloud.android.crop.Crop;
-import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.Picasso;
-
 import java.io.File;
 import java.util.ArrayList;
 
@@ -56,13 +54,20 @@ public class AlbumActivity extends AppCompatActivity implements  View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.album_activity);
 
-        ActionBar actionBar = getSupportActionBar();
-        View view = getLayoutInflater().inflate(R.layout.album_activity_actionbar,null);
-        actionBar.setCustomView(view);
-        actionBar.setDisplayShowCustomEnabled(true);
-        actionBar.setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        mSpinner = getSupportActionBar().getCustomView().findViewById(R.id.spinner);
+        mRecyclerView = findViewById(R.id.recyclerview);
+        mRecyclerViewAdapter = new AlbumRecyclerViewAdapter(this, null, this );
+        mRecyclerView.setAdapter(mRecyclerViewAdapter);
+        mRecyclerView = findViewById(R.id.recyclerview);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.album_activity_menu, menu);
+        MenuItem item = menu.findItem(R.id.spinner);
+        mSpinner = (Spinner) item.getActionView();
 
         bucketNameList = new ArrayList<>();
         bucketNameList.add("전체");//버킷이 없어도 꼭 있어야하는 기본 옵션이 전체 보기이기 때문이다.
@@ -72,14 +77,20 @@ public class AlbumActivity extends AppCompatActivity implements  View.OnClickLis
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinner.setAdapter(mAdapter);
         mSpinner.setOnItemSelectedListener(this);
+
         getSupportLoaderManager().initLoader(0, null, this);
-
-        mRecyclerView = findViewById(R.id.recyclerview);
-        mRecyclerViewAdapter = new AlbumRecyclerViewAdapter(this, null, this );
-        mRecyclerView.setAdapter(mRecyclerViewAdapter);
-        mRecyclerView = findViewById(R.id.recyclerview);
-
+        return true;
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId()== android.R.id.home){
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     /**
      *
      * @param id 생성 아이디가 0일때 버킷 리스트들의 id와 name들을 로드한다, 1일떄는 선택된 버킷 아이디에 따라 해당 버킷에 포함된 이미지들을 로드한다.

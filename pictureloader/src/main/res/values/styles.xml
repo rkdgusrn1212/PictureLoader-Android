@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="PictureLoaderTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="PictureLoaderTheme" parent="Theme.AppCompat">
         <item name="colorPrimary">@android:color/holo_orange_light</item>
         <item name="colorPrimaryDark">@android:color/holo_orange_dark</item>
         <item name="colorAccent">@android:color/holo_blue_dark</item>
