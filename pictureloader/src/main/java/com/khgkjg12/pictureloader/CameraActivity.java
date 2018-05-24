@@ -12,13 +12,19 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.soundcloud.android.crop.Crop;
+
+import static android.hardware.Camera.open;
 
 /**
  * Created by Hyun on 2018-05-22.
@@ -38,55 +44,46 @@ public class CameraActivity extends AppCompatActivity{
             actionBar.hide();
         }
 
-        View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-        decorView.setSystemUiVisibility(uiOptions);
-        decorView.setOnSystemUiVisibilityChangeListener
-                (new View.OnSystemUiVisibilityChangeListener() {
-                    @Override
-                    public void onSystemUiVisibilityChange(int visibility) {
-                        // Note that system bars will only be "visible" if none of the
-                        // LOW_PROFILE, HIDE_NAVIGATION, or FULLSCREEN flags are set.
-                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                            // TODO: The system bars are visible. Make any desired
-                            // adjustments to your UI, such as showing the action bar or
-                            // other navigational controls.
-                            View decorView = getWindow().getDecorView();
-                            decorView.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                            | View.SYSTEM_UI_FLAG_FULLSCREEN
-                                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-                                    getWindow().getDecorView().setSystemUiVisibility(uiOptions);
-                                }
-                            },1000);
-
-                        } else {
-                            // TODO: The system bars are NOT visible. Make any desired
-                            // adjustments to your UI, such as hiding the action bar or
-                            // other navigational controls.
-                        }
-                    }
-                });
-
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            View decorView = getWindow().getDecorView();
+            int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            decorView.setSystemUiVisibility(uiOptions);
+        }
         if(checkCameraHardware(this)){
-            mCamera = getCameraInstance();
-            if(mCamera==null){
-                Toast.makeText(this, R.string.camera_is_not_available_error, Toast.LENGTH_SHORT).show();
+            int cameraId = getCameraInstanceId();
+            if(cameraId==-1){
+                Toast.makeText(getApplicationContext(), R.string.camera_is_not_available_error, Toast.LENGTH_SHORT).show();
+                finish();
+                return;
             }else {
-                mPreview = new CameraPreview(this, mCamera);
+                try {
+                    mCamera = Camera.open(cameraId);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    Toast.makeText(getApplicationContext(), R.string.camera_is_not_available_error, Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                mPreview = new CameraPreview(this, mCamera, cameraId);
                 FrameLayout previewLayout = findViewById(R.id.preview);
-                previewLayout.addView(mPreview,0);
-                mCamera.setDisplayOrientation(90);
+                previewLayout.addView(mPreview, 0);
+                ((FrameLayout.LayoutParams)mPreview.getLayoutParams()).gravity = Gravity.CENTER;
             }
         }else{
-            Toast.makeText(this, R.string.no_camera_error, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), R.string.no_camera_error, Toast.LENGTH_LONG).show();
+            finish();
+            return;
         }
+
+        ImageButton pictureButton = findViewById(R.id.picture_button);
+        pictureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "CLICKED ", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private boolean checkCameraHardware(Context context) {
@@ -99,14 +96,27 @@ public class CameraActivity extends AppCompatActivity{
         }
     }
 
-    public static android.hardware.Camera getCameraInstance() {
-        android.hardware.Camera c = null;
+    public static int getCameraInstanceId() {
         try {
-            c = android.hardware.Camera.open();// attempt to get a Camera instance
+            int numberOfCameras = Camera.getNumberOfCameras();
+            Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+            for (int i = 0; i < numberOfCameras; i++) {
+                Camera.getCameraInfo(i, cameraInfo);
+                if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                    return i;
+                }
+            }
+            for (int i = 0; i < numberOfCameras; i++) {
+                Camera.getCameraInfo(i, cameraInfo);
+                if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                    return i;
+                }
+            }
         }
         catch (Exception e){
+            e.printStackTrace();
             // Camera is not available (in use or does not exist)
         }
-        return c; // returns null if camera is unavailable
+        return -1; // returns -1 if camera is unavailable
     }
 }
