@@ -4,4 +4,6 @@
     <string name="dialog_album_button">앨범에서 사진 선택</string>
     <string name="camera_is_not_available_error">현재 카메라를 사용할 수 없습니다.</string>
     <string name="no_camera_error">카메라가 감지되지 않습니다.</string>
+    <string name="album_activity_spinner">앨범 선택</string>
+    <string name="picture_save_error">사진을 저장하지 못했습니다.</string>
 </resources>
